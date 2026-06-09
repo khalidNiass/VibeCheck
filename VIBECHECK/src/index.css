@@ -727,8 +727,8 @@ input[type="text"]:focus {
   transform: scale(0.97) !important;
 }
 
-.btn:hover .logo-emoji,
-.btn:active .logo-emoji,
+.btn:hover .brand-logo-mark,
+.btn:active .brand-logo-mark,
 .archetype-badge:hover .archetype-emoji,
 .mascot-badge:hover .mascot-emoji,
 .form-badge:hover {

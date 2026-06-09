@@ -1,5 +1,5 @@
 /**
- * Deterministic hash function for string input
+ * Deterministic hash function for string input.
  */
 export function hashCode(str) {
   let hash = 0;
@@ -9,153 +9,256 @@ export function hashCode(str) {
   return Math.abs(hash);
 }
 
+const AGE_FLAVORS = ['playful', 'confident', 'grounded'];
+const TIME_SHIFTS = ['fresh', 'social', 'deep'];
+
 function pickBySeed(items, seed, shift = 0) {
   return items[(seed >>> shift) % items.length];
 }
 
-const OPENERS = [
-  "You carry a radiant, magnetic presence that",
-  "To those around you, you are a grounding anchor who",
-  "Your energy is like a warm cup of matcha on a rainy day, which",
-  "You have a vibrant, electric aura that",
-  "You possess a gentle, quiet strength that",
-  "Your presence is a breath of fresh air that",
-  "You are a spark of joy and spontaneous inspiration, who",
-  "You have a soothing, harmonious frequency that",
-  "Like a cozy fireplace in mid-winter, your essence",
-  "You shine with a bright, sun-dappled optimism that",
-  "You carry a deep, thoughtful mindfulness that",
-  "Your vibe is a playful, creative dance that",
-  "You are a natural catalyst of good energy who",
-  "You have a sweet, serene calmness that",
-  "Your spirit feels like a golden, peaceful sunset, which",
-  "You possess an intuitive, guiding compass that",
-  "You bring a cheerful, lighthearted sparkle that",
-  "Your aura is a tapestry of cozy wisdom that",
-  "You carry an infectious, spirited drive that",
-  "You have a soft, healing kindness that"
-];
+function hasEmoji(value) {
+  return /[\u{1f300}-\u{1faff}\u{2600}-\u{27bf}]/u.test(value);
+}
 
-const TRAITS = [
-  "blends effortless empathy with a brilliant creative spark",
-  "pairs deep wisdom with a lighthearted sense of play",
-  "unites a comforting warmth with a fierce, quiet loyalty",
-  "mixes bubbly enthusiasm with a genuine, caring heart",
-  "combines a sharp, curious intellect with gentle patience",
-  "radiates absolute authenticity and a love for simple joys",
-  "brings a serene, mindful focus to every single interaction",
-  "champions others with boundless support and positive vibes",
-  "finds beauty in the details and spreads harmony wherever you go",
-  "holds a magical ability to see the silver lining in everything",
-  "bridges people together with understanding and sweet laughter",
-  "approaches the world with open-minded wonder and steady courage",
-  "weaves cozy comfort together with a brilliant, adventurous mind",
-  "stands out through a graceful poise and a heart of pure gold",
-  "channels pure flow and artistic inspiration into daily life"
-];
+function getTimeShift(date = new Date()) {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 12) return 'fresh';
+  if (hour >= 12 && hour < 18) return 'social';
+  return 'deep';
+}
 
-const EFFECTS = [
-  "leaving everyone you meet feeling instantly understood and valued.",
-  "sparking laughter and turning ordinary moments into lasting memories.",
-  "creating a safe, peaceful space where people can truly be themselves.",
-  "inspiring those around you to dream a little bigger and smile a little wider.",
-  "quietly calming the chaos and bringing a sense of order and peace.",
-  "energizing the room and motivating others to follow their passions.",
-  "making friends feel like family and strangers feel like old friends.",
-  "shining a light on other people's strengths, helping them glow.",
-  "bringing a beautiful, grounding clarity to complex situations.",
-  "leaving a trail of inspiration, kindness, and cozy vibes behind you.",
-  "helping others slow down, breathe, and appreciate the present moment.",
-  "filling your surroundings with a warm, comforting sense of belonging.",
-  "encouraging everyone to share their stories and express themselves.",
-  "dissolving tension and replacing it with pure, lighthearted harmony.",
-  "guiding friends toward their own inner light and joyful path."
-];
+function inferAgeFlavor(name, signals = {}, seed = 0) {
+  const clean = name.trim();
+  const compact = clean.replace(/\s+/g, '');
+  const lower = clean.toLowerCase();
+  let playful = 0;
+  let confident = 1;
+  let grounded = 0;
+
+  if (signals.hadEmoji || hasEmoji(clean)) playful += 2;
+  if (signals.interactionMs && signals.interactionMs < 1800) playful += 1;
+  if (signals.isMobile) playful += 1;
+  if (compact.length <= 5) playful += 1;
+  if (/(.)\1{2,}/.test(lower)) playful += 1;
+  if (/ie$|y$|i$/.test(lower)) playful += 1;
+
+  if (compact.length >= 9) grounded += 1;
+  if (clean.includes(' ')) grounded += 1;
+  if (/^(mary|john|michael|sarah|david|anna|maria|paul|elizabeth|james|robert|patricia)$/i.test(clean)) {
+    grounded += 1;
+  }
+
+  confident += (seed >>> 5) % 2;
+
+  const scores = [
+    ['playful', playful],
+    ['confident', confident],
+    ['grounded', grounded]
+  ].sort((a, b) => b[1] - a[1]);
+
+  return scores[0][1] === scores[1]?.[1]
+    ? AGE_FLAVORS[(seed >>> 9) % AGE_FLAVORS.length]
+    : scores[0][0];
+}
+
+export function encodeVibeContext(context = {}) {
+  const ageIndex = Math.max(0, AGE_FLAVORS.indexOf(context.ageFlavor));
+  const timeIndex = Math.max(0, TIME_SHIFTS.indexOf(context.timeShift));
+  return `${ageIndex}${timeIndex}`;
+}
+
+export function decodeVibeContext(token) {
+  if (!token || token.length < 2) return {};
+
+  const ageIndex = Number(token[0]);
+  const timeIndex = Number(token[1]);
+
+  return {
+    ageFlavor: AGE_FLAVORS[ageIndex],
+    timeShift: TIME_SHIFTS[timeIndex]
+  };
+}
+
+export function createVibeContext(name, signals = {}) {
+  const seed = hashCode(name.trim().toLowerCase());
+  return {
+    ageFlavor: inferAgeFlavor(name, signals, seed),
+    timeShift: getTimeShift()
+  };
+}
 
 const ARCHETYPES = [
-  { title: "The Radiant Catalyst", emoji: "✨" },
-  { title: "The Cozy Visionary", emoji: "🍵" },
-  { title: "The Serene Spark", emoji: "🕯️" },
-  { title: "The Zen Explorer", emoji: "🌊" },
-  { title: "The Cosmic Anchor", emoji: "🌌" },
-  { title: "The Joyful Alchemist", emoji: "🎨" },
-  { title: "The Harmony Weaver", emoji: "🌸" },
-  { title: "The Golden Optimist", emoji: "☀️" },
-  { title: "The Gentle Pioneer", emoji: "🍃" },
-  { title: "The Soulful Sage", emoji: "🪐" },
-  { title: "The Dream Whisperer", emoji: "☁️" },
-  { title: "The Bright Catalyst", emoji: "⚡" },
-  { title: "The Mystic Guide", emoji: "🔮" },
-  { title: "The Playful Muse", emoji: "🎈" },
-  { title: "The Warm Haven", emoji: "🏡" }
+  { title: 'The Radiant Spark', emoji: '✨' },
+  { title: 'The Calm Magnet', emoji: '💜' },
+  { title: 'The Bright Connector', emoji: '🌟' },
+  { title: 'The Soft Power', emoji: '💫' },
+  { title: 'The Joyful Signal', emoji: '😄' },
+  { title: 'The Clear Mind', emoji: '🔮' },
+  { title: 'The Warm Glow', emoji: '✨' },
+  { title: 'The Steady Light', emoji: '🌟' },
+  { title: 'The Creative Pulse', emoji: '💜' },
+  { title: 'The Easy Energy', emoji: '😄' },
+  { title: 'The Kind Force', emoji: '💫' },
+  { title: 'The Honest Spark', emoji: '✨' }
 ];
 
+const CORE_TRAITS = [
+  'warmth with quiet confidence',
+  'honesty with a bright creative edge',
+  'calm presence with natural charm',
+  'kindness with steady focus',
+  'easy joy with emotional depth',
+  'clear thinking with a generous heart',
+  'playful energy with real intention',
+  'soft confidence with strong intuition',
+  'social ease with thoughtful awareness',
+  'fresh perspective with grounded care'
+];
+
+const EMOTIONAL_ENERGIES = [
+  'people feel comfortable opening up around you',
+  'you make simple moments feel lighter',
+  'others feel seen without needing to explain much',
+  'your presence brings calm into busy moments',
+  'people trust your energy faster than they expect',
+  'you help the room feel more open and relaxed',
+  'your vibe makes people feel included',
+  'you turn quiet moments into something meaningful',
+  'others feel encouraged by the way you show up',
+  'your energy feels easy to remember'
+];
+
+const AGE_TONE = {
+  playful: [
+    'bright, expressive, and instantly easy to like',
+    'fun without trying too hard',
+    'light, bold, and full of good energy',
+    'quick to lift the mood around you'
+  ],
+  confident: [
+    'focused, warm, and naturally magnetic',
+    'confident in a way that feels welcoming',
+    'driven, balanced, and easy to respect',
+    'clear about your energy without needing attention'
+  ],
+  grounded: [
+    'steady, thoughtful, and quietly powerful',
+    'calm in a way people remember',
+    'reflective, warm, and emotionally clear',
+    'grounded without losing your spark'
+  ]
+};
+
+const TIME_TONE = {
+  fresh: [
+    'fresh and optimistic',
+    'clear, uplifting, and ready for what is next',
+    'focused with a gentle spark'
+  ],
+  social: [
+    'balanced, confident, and social',
+    'warmly present and easy to connect with',
+    'active, open, and quietly magnetic'
+  ],
+  deep: [
+    'soft, deep, and emotionally aware',
+    'calm with a thoughtful kind of glow',
+    'introspective, warm, and easy to trust'
+  ]
+};
+
 const THEMES = [
-  { id: "theme-violet-glow", name: "Violet Glow" },
-  { id: "theme-cosmic-sage", name: "Cosmic Sage" },
-  { id: "theme-sunset-aura", name: "Sunset Aura" },
-  { id: "theme-sapphire-oasis", name: "Sapphire Oasis" },
-  { id: "theme-emerald-harmony", name: "Emerald Harmony" },
-  { id: "theme-amber-light", name: "Amber Light" }
+  { id: 'theme-violet-glow', name: 'Violet Glow' },
+  { id: 'theme-cosmic-sage', name: 'Cosmic Sage' },
+  { id: 'theme-sunset-aura', name: 'Sunset Aura' },
+  { id: 'theme-sapphire-oasis', name: 'Sapphire Oasis' },
+  { id: 'theme-emerald-harmony', name: 'Emerald Harmony' },
+  { id: 'theme-amber-light', name: 'Amber Light' }
 ];
 
 const MASCOTS = [
-  { text: "A glowing firefly", emoji: "🪰" },
-  { text: "A freshly brewed matcha latte", emoji: "🍵" },
-  { text: "A pocket-sized notebook full of dreams", emoji: "📔" },
-  { text: "A vintage vinyl record spinning smoothly", emoji: "📻" },
-  { text: "A sun-dappled leaf swaying in the breeze", emoji: "🍃" },
-  { text: "A warm mug of spiced hot chocolate", emoji: "☕" },
-  { text: "A shooting star in a clear night sky", emoji: "🌠" },
-  { text: "A perfectly smooth river stone", emoji: "🪨" },
-  { text: "A blooming sunflower turning to light", emoji: "🌻" },
-  { text: "A soft, woolen blanket on a cold night", emoji: "🧶" },
-  { text: "A tiny, thriving succulent on a desk", emoji: "🪴" },
-  { text: "A warm, comforting candle flame", emoji: "🕯️" },
-  { text: "A seashell holding the sound of the ocean", emoji: "🐚" },
-  { text: "A kite flying high in a clear blue sky", emoji: "🪁" },
-  { text: "A golden key unlocking creativity", emoji: "🔑" }
+  { text: 'A tiny glowing spark', emoji: '✨' },
+  { text: 'A smooth purple charm', emoji: '💜' },
+  { text: 'A bright little signal', emoji: '🌟' },
+  { text: 'A soft golden glow', emoji: '💫' },
+  { text: 'A calm lucky token', emoji: '🔮' },
+  { text: 'A warm pocket of joy', emoji: '😄' },
+  { text: 'A clear little light', emoji: '✨' },
+  { text: 'A steady energy gem', emoji: '💜' }
 ];
+
+const SHARE_HOOKS = [
+  'I just got my VibeCheck 😄',
+  'This VibeCheck result felt a little too accurate 👀',
+  'My vibe result just dropped ✨',
+  'I tried VibeCheck and this is what I got 😄'
+];
+
+function composeDescription(seed, ageFlavor, timeShift) {
+  const coreTrait = pickBySeed(CORE_TRAITS, seed, 2);
+  const emotionalEnergy = pickBySeed(EMOTIONAL_ENERGIES, seed, 4);
+  const ageTone = pickBySeed(AGE_TONE[ageFlavor], seed, 6);
+  const timeTone = pickBySeed(TIME_TONE[timeShift], seed, 8);
+
+  return `You give off ${timeTone} energy that blends ${coreTrait}. You feel ${ageTone}, and ${emotionalEnergy}.`;
+}
+
+function buildShareText(vibe) {
+  const hook = pickBySeed(SHARE_HOOKS, hashCode(vibe.name.toLowerCase()), 3);
+  return `${hook}
+
+${vibe.emoji} ${vibe.archetypeTitle}
+"${vibe.description}"
+
+What vibe do you get? 👀`;
+}
 
 /**
  * Generates a full deterministic vibe configuration for a name.
  */
-export function generateVibe(name) {
+export function generateVibe(name, options = {}) {
   if (!name || typeof name !== 'string') {
     return null;
   }
-  
+
   const cleanName = name.trim();
+  if (!cleanName) return null;
+
   const lowerName = cleanName.toLowerCase();
   const seed = hashCode(lowerName);
-  
-  const opener = pickBySeed(OPENERS, seed);
-  const trait = pickBySeed(TRAITS, seed, 2);
-  const effect = pickBySeed(EFFECTS, seed, 4);
+  const decoded = decodeVibeContext(options.variant);
+  const ageFlavor = options.ageFlavor || decoded.ageFlavor || inferAgeFlavor(cleanName, options.signals, seed);
+  const timeShift = options.timeShift || decoded.timeShift || getTimeShift();
+
   const archetype = pickBySeed(ARCHETYPES, seed, 6);
   const theme = pickBySeed(THEMES, seed, 8);
   const mascot = pickBySeed(MASCOTS, seed, 10);
-  
-  // Deterministic stats between 82% and 99% for fun, glowing feedback
+
   const auraGlow = 82 + (seed % 18);
-  const cozyFactor = 82 + ((seed >>> 1) % 18);
-  const chillQuotient = 82 + ((seed >>> 2) % 18);
-  const creativeSpark = 82 + ((seed >>> 3) % 18);
-  
-  return {
+  const socialSpark = 82 + ((seed >>> 1) % 18);
+  const calmEnergy = 82 + ((seed >>> 2) % 18);
+  const creativeFlow = 82 + ((seed >>> 3) % 18);
+
+  const vibe = {
     name: cleanName,
     archetypeTitle: archetype.title,
     emoji: archetype.emoji,
-    description: `${opener} ${trait}, ${effect}`,
+    description: composeDescription(seed, ageFlavor, timeShift),
     themeClass: theme.id,
     themeName: theme.name,
     mascotText: mascot.text,
     mascotEmoji: mascot.emoji,
+    shareVariant: encodeVibeContext({ ageFlavor, timeShift }),
     stats: {
-      "Aura Glow": auraGlow,
-      "Cozy Factor": cozyFactor,
-      "Chill Quotient": chillQuotient,
-      "Creative Spark": creativeSpark
+      'Aura Glow': auraGlow,
+      'Social Spark': socialSpark,
+      'Calm Energy': calmEnergy,
+      'Creative Flow': creativeFlow
     }
+  };
+
+  return {
+    ...vibe,
+    shareText: buildShareText(vibe)
   };
 }

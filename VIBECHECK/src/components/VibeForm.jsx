@@ -5,9 +5,11 @@ export default function VibeForm({ onSubmit, initialName = '' }) {
   const [name, setName] = useState(initialName);
   const [error, setError] = useState('');
   const inputRef = useRef(null);
+  const mountedAt = useRef(0);
 
   // Autofocus the input on mount
   useEffect(() => {
+    mountedAt.current = Date.now();
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -21,7 +23,12 @@ export default function VibeForm({ onSubmit, initialName = '' }) {
       return;
     }
     setError('');
-    onSubmit(cleanName);
+    onSubmit(cleanName, {
+      hadEmoji: /[\u{1f300}-\u{1faff}\u{2600}-\u{27bf}]/u.test(cleanName),
+      inputLength: cleanName.length,
+      interactionMs: Date.now() - mountedAt.current,
+      isMobile: window.matchMedia('(max-width: 640px)').matches || navigator.maxTouchPoints > 0
+    });
   };
 
   const handleInputChange = (e) => {

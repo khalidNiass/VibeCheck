@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import EmojiBurst from './EmojiBurst';
 import MotionReveal from './Motion';
+import { SocialLinkButtons } from './SocialLinks';
 
 export default function VibeCard({ vibe, onReset, isShared = false }) {
   const [toastMessage, setToastMessage] = useState('');
@@ -31,7 +32,11 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
   // Construct sharing URL
   const getShareUrl = () => {
     const base = window.location.origin + window.location.pathname;
-    return `${base}?name=${encodeURIComponent(vibe.name)}`;
+    const params = new URLSearchParams({
+      name: vibe.name,
+      v: vibe.shareVariant
+    });
+    return `${base}?${params.toString()}`;
   };
 
   const handleCopyLink = async () => {
@@ -60,12 +65,12 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
 
   const getWhatsAppShareUrl = () => {
     const shareUrl = getShareUrl();
-    const text = `🎭 I just ran a VibeCheck! My vibe signature is:
-    
-✨ ${vibe.archetypeTitle.toUpperCase()} ${vibe.emoji}
+    const text = vibe.shareText || `I just got my VibeCheck 😄
+
+${vibe.emoji} ${vibe.archetypeTitle}
 "${vibe.description}"
 
-Check what your vibe is here! 👇`;
+What vibe do you get? 👀`;
 
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`;
   };
@@ -110,6 +115,11 @@ Check what your vibe is here! 👇`;
       {!isShared && (shareSheetVisible || shareSheetClosing) && (
         <div className={`share-sheet-backdrop ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`}>
           <div className={`share-sheet ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`} role="region" aria-label="Share your VibeCheck result">
+            <div className="share-sheet-brand" aria-hidden="true">
+              <img src="/logo.png" alt="" />
+              <span>VibeCheck</span>
+            </div>
+
             <button
               type="button"
               className="share-sheet-close"
@@ -128,7 +138,7 @@ Check what your vibe is here! 👇`;
             ) : (
               <>
                 <div className="share-sheet-kicker">Ta-da 🎉</div>
-                <h3 className="share-sheet-title">This result is share-worthy 😄</h3>
+                <h3 className="share-sheet-title">This result is share worthy 😄</h3>
                 <p className="share-sheet-copy">Send it to your friends and see what vibe they get.</p>
               </>
             )}
@@ -172,6 +182,7 @@ Check what your vibe is here! 👇`;
       <MotionReveal className={`glass-panel vibe-card result-reveal ${vibe.themeClass}`} variant="result">
         {/* Glow backdrop inside the card */}
         <div className="card-aura-glow"></div>
+        <img className="result-card-logo" src="/logo.png" alt="" aria-hidden="true" />
 
         <MotionReveal className="card-header" delay={160}>
           <span className="profile-label">AURA SIGNATURE</span>
@@ -269,6 +280,10 @@ Check what your vibe is here! 👇`;
           </>
         )}
       </MotionReveal>
+{/* 
+      <div className="result-social-panel">
+        <SocialLinkButtons ariaLabelPrefix="Open" />
+      </div> */}
     </div>
   );
 }

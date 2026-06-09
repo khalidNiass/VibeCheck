@@ -1,19 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="VibeCheck">
   <defs>
-    <linearGradient id="bg" x1="10" y1="8" x2="54" y2="58" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#b866ff"/>
-      <stop offset="0.55" stop-color="#863bff"/>
+    <linearGradient id="bubble" x1="13" y1="11" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a035fc"/>
       <stop offset="1" stop-color="#4f46e5"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="matrix(38 0 0 38 20 14)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ffffff" stop-opacity="0.52"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
   </defs>
-  <rect width="64" height="64" rx="18" fill="url(#bg)"/>
-  <rect width="64" height="64" rx="18" fill="url(#glow)"/>
-  <path fill="#fff" d="M18.2 21.5h6.7l6.1 19.2 6.2-19.2h6.3L34.2 47h-6.8L18.2 21.5Z"/>
-  <path fill="#efe7ff" d="M46.4 45.8c-5.9 0-10-4.1-10-9.6 0-5.6 4.2-9.8 10.1-9.8 3.3 0 6 1.2 7.6 3.4l-3.7 3.5c-.9-1.1-2.2-1.8-3.8-1.8-2.6 0-4.4 1.9-4.4 4.6s1.8 4.7 4.4 4.7c1.6 0 2.9-.7 3.9-1.9l3.7 3.4c-1.7 2.4-4.5 3.5-7.8 3.5Z"/>
-  <path fill="#fff7ad" d="M49.8 10.2 52 15l4.8 2.2-4.8 2.2-2.2 4.8-2.2-4.8-4.8-2.2 4.8-2.2 2.2-4.8Z"/>
-  <circle cx="16" cy="47" r="3" fill="#f9a8d4"/>
+  <rect width="64" height="64" rx="16" fill="#ffffff"/>
+  <circle cx="32" cy="32" r="27" fill="#a035fc" opacity="0.08"/>
+  <path fill="url(#bubble)" d="M12 29c0-9.9 8-18 18-18h7c11.6 0 21 9.4 21 21s-9.4 21-21 21h-9l-8.2 6.2c-1.6 1.2-3.9-.1-3.7-2.1l1.1-11.4C14 42.2 12 37.6 12 32.5V29Z"/>
+  <circle cx="26" cy="29" r="7.2" fill="#ffffff"/>
+  <circle cx="42" cy="25" r="7.5" fill="#ffffff"/>
+  <circle cx="26" cy="29" r="4.4" fill="#7df5cd"/>
+  <circle cx="42" cy="25" r="4.5" fill="#ffe674"/>
+  <path d="M25 39c4.5 4.8 11.8 5.5 17 1.2" fill="none" stroke="#ffffff" stroke-width="3.8" stroke-linecap="round"/>
+  <path fill="#ffe674" d="M51 8.5 53.8 16l7.7 2.8-7.7 2.8L51 29l-2.8-7.4-7.7-2.8 7.7-2.8L51 8.5Z"/>
 </svg>
