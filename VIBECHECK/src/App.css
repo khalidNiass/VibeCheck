@@ -20,6 +20,8 @@
 
 .logo-emoji {
   font-size: 26px;
+  transform-origin: 50% 70%;
+  animation: popIn 0.42s var(--ease-bounce) 0.12s both;
 }
 
 @media (min-width: 480px) {
@@ -76,6 +78,10 @@
   color: var(--text);
   opacity: 0.75;
   margin: 4px 0 0 0;
+}
+
+.logo-container:hover .logo-emoji {
+  animation: popIn 0.34s var(--ease-bounce);
 }
 
 /* VibeForm Styling */
@@ -149,6 +155,14 @@
   align-items: center;
   gap: 5px;
   white-space: nowrap;
+  transition: transform 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .form-badge:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(160, 53, 252, 0.09);
+  }
 }
 
 /* AuraScanner Styling */
@@ -223,7 +237,26 @@
   font-size: 20px;
   font-weight: 700;
   color: var(--text-h);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.scanner-progress {
+  width: min(210px, 82%);
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.scanner-progress-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  transform: translateX(-96%);
+  animation: progressSweep 2.45s var(--ease-out) forwards;
 }
 
 .scanner-message-box {
@@ -249,6 +282,7 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  position: relative;
 }
 
 @media (min-width: 480px) {
@@ -288,6 +322,13 @@
   border-radius: 24px;
   border: 1px solid var(--glass-border);
   text-align: left;
+  transform-origin: center top;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .vibe-card:hover {
+    transform: translateY(-4px) scale(1.006);
+  }
 }
 
 .card-aura-glow {
@@ -302,6 +343,7 @@
   opacity: 0.2;
   pointer-events: none;
   z-index: 0;
+  animation: pulseGlow 3.2s ease-in-out infinite;
 }
 
 .card-header {
@@ -348,6 +390,7 @@
 
 .archetype-emoji {
   font-size: 16px;
+  transform-origin: center;
 }
 
 .archetype-title {
@@ -398,6 +441,19 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
+  animation: fadeIn 0.34s var(--ease-out) both;
+}
+
+.stat-row:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.stat-row:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.stat-row:nth-child(4) {
+  animation-delay: 200ms;
 }
 
 .stat-info {
@@ -434,7 +490,9 @@
   height: 100%;
   background: var(--card-gradient);
   border-radius: 6px;
-  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.9s var(--ease-out);
+  transform-origin: left center;
+  animation: statFill 0.9s var(--ease-out) 0.42s both;
 }
 
 .mascot-badge {
@@ -453,6 +511,7 @@
 
 .mascot-emoji {
   font-size: 18px;
+  transform-origin: center;
 }
 
 .mascot-text {
@@ -466,6 +525,7 @@
   gap: 10px;
   width: 100%;
   margin-top: 4px;
+  position: relative;
 }
 
 .sharing-headline {
@@ -507,6 +567,295 @@
   margin-top: 2px;
 }
 
+.share-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: rgba(30, 17, 45, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: shareSheetBackdropIn 0.32s var(--ease-out) both;
+}
+
+.share-sheet-backdrop.is-closing {
+  animation: shareSheetBackdropOut 0.24s var(--ease-out) both;
+}
+
+.share-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: min(430px, calc(100vw - 24px));
+  padding: 18px 16px 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text-h);
+  text-align: center;
+  box-shadow: 0 -12px 34px -26px rgba(79, 70, 229, 0.5);
+  animation: shareSheetIn 0.5s var(--ease-bounce) both, shareSheetPulse 2.7s ease-in-out 0.55s infinite;
+  transform: translateX(-50%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .share-sheet {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(18, 14, 28, 0.9);
+  }
+}
+
+.share-sheet.is-sharing {
+  animation: shareSheetShareTap 0.42s var(--ease-bounce) both;
+}
+
+.share-sheet.is-closing {
+  animation: shareSheetOut 0.24s var(--ease-out) both;
+}
+
+.share-sheet-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+
+.share-sheet-close:active {
+  transform: scale(0.92);
+}
+
+.share-sheet-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.share-sheet-title {
+  font-size: 20px;
+  margin: 0 36px 6px;
+  letter-spacing: 0;
+}
+
+.share-sheet-copy {
+  max-width: 280px;
+  margin: 0 auto 14px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.share-sheet-button {
+  height: 56px;
+  border-radius: 18px;
+  font-size: 16.5px;
+  box-shadow: 0 12px 24px -12px rgba(37, 211, 102, 0.62);
+}
+
+.share-sheet-button .whatsapp-button-icon {
+  animation: whatsappWiggle 1.8s var(--ease-bounce) 0.6s infinite;
+}
+
+.share-sheet-button.is-sharing .whatsapp-button-icon {
+  animation: whatsappIconFly 0.58s var(--ease-out) both;
+}
+
+.share-sheet-later {
+  margin-top: 10px;
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.share-sheet-later:active {
+  transform: scale(0.96);
+}
+
+.share-sheet-success {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 6px 34px 14px;
+  animation: rewardBounce 0.44s var(--ease-bounce) both;
+}
+
+.share-sheet-success-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(160, 53, 252, 0.14), rgba(37, 211, 102, 0.16));
+  font-size: 24px;
+}
+
+.share-sheet-success strong {
+  font-size: 21px;
+  color: var(--text-h);
+}
+
+.share-sheet-success span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.btn-share-magnet {
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+  animation: shareNudgeLoop 10s var(--ease-out) 0.8s infinite;
+}
+
+.btn-share-magnet::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 20px;
+  background: radial-gradient(circle, rgba(37, 211, 102, 0.2), transparent 68%);
+  opacity: 0;
+  transform: scale(0.96);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.btn-share-magnet.is-sharing {
+  animation: shareButtonPress 0.36s var(--ease-bounce);
+}
+
+.btn-share-magnet.is-sharing::before {
+  animation: shareGlowBloom 0.58s var(--ease-out);
+}
+
+.whatsapp-button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 14px;
+  line-height: 1;
+  transform-origin: center;
+}
+
+.btn-share-magnet.is-sharing .whatsapp-button-icon {
+  animation: whatsappIconFly 0.58s var(--ease-out) both;
+}
+
+.share-reward-message {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.13), rgba(160, 53, 252, 0.08));
+  border: 1.5px solid rgba(37, 211, 102, 0.22);
+  color: var(--text-h);
+  text-align: center;
+  box-shadow: 0 12px 26px -18px rgba(37, 211, 102, 0.55);
+  animation: rewardBounce 0.44s var(--ease-bounce) both;
+}
+
+.share-reward-message strong {
+  font-size: 15px;
+  line-height: 125%;
+}
+
+.share-reward-message span {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.share-reward-message small {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.86;
+}
+
+.share-celebration-layer {
+  position: fixed;
+  left: 50%;
+  bottom: 118px;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.share-float-icon {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.95);
+  color: #ffffff;
+  font-size: 16px;
+  box-shadow: 0 10px 24px rgba(37, 211, 102, 0.26);
+  animation: shareFloatAway 0.9s var(--ease-out) both;
+  will-change: transform, opacity;
+}
+
+.share-float-icon:nth-child(1) {
+  --share-x: -86px;
+  --share-y: -120px;
+  --share-scale: 1.08;
+  --share-rot: -10deg;
+}
+
+.share-float-icon:nth-child(2) {
+  --share-x: -34px;
+  --share-y: -148px;
+  --share-scale: 0.94;
+  --share-rot: 12deg;
+  animation-delay: 60ms;
+}
+
+.share-float-icon:nth-child(3) {
+  --share-x: 42px;
+  --share-y: -136px;
+  --share-scale: 1;
+  --share-rot: -18deg;
+  animation-delay: 110ms;
+}
+
+.share-float-icon:nth-child(4) {
+  --share-x: 92px;
+  --share-y: -108px;
+  --share-scale: 0.9;
+  --share-rot: 15deg;
+  animation-delay: 150ms;
+}
+
 /* Toast Notification Alert */
 .toast-notification {
   position: fixed;
@@ -528,6 +877,27 @@
   -webkit-backdrop-filter: blur(8px);
   width: 90%;
   max-width: 380px; /* Toast centered and sized correctly on mobile */
+}
+
+.emoji-burst-container {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.emoji-particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: clamp(18px, 5vw, 26px);
+  line-height: 1;
+  filter: drop-shadow(0 5px 10px rgba(30, 17, 45, 0.12));
+  animation: emojiBurst 1.2s var(--ease-out) both;
+  will-change: transform, opacity;
 }
 
 @media (prefers-color-scheme: dark) {

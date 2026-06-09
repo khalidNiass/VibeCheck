@@ -9,6 +9,10 @@ export function hashCode(str) {
   return Math.abs(hash);
 }
 
+function pickBySeed(items, seed, shift = 0) {
+  return items[(seed >>> shift) % items.length];
+}
+
 const OPENERS = [
   "You carry a radiant, magnetic presence that",
   "To those around you, you are a grounding anchor who",
@@ -125,18 +129,18 @@ export function generateVibe(name) {
   const lowerName = cleanName.toLowerCase();
   const seed = hashCode(lowerName);
   
-  const opener = OPENERS[seed % OPENERS.length];
-  const trait = TRAITS[(seed >> 2) % TRAITS.length];
-  const effect = EFFECTS[(seed >> 4) % EFFECTS.length];
-  const archetype = ARCHETYPES[(seed >> 6) % ARCHETYPES.length];
-  const theme = THEMES[(seed >> 8) % THEMES.length];
-  const mascot = MASCOTS[(seed >> 10) % MASCOTS.length];
+  const opener = pickBySeed(OPENERS, seed);
+  const trait = pickBySeed(TRAITS, seed, 2);
+  const effect = pickBySeed(EFFECTS, seed, 4);
+  const archetype = pickBySeed(ARCHETYPES, seed, 6);
+  const theme = pickBySeed(THEMES, seed, 8);
+  const mascot = pickBySeed(MASCOTS, seed, 10);
   
   // Deterministic stats between 82% and 99% for fun, glowing feedback
   const auraGlow = 82 + (seed % 18);
-  const cozyFactor = 82 + ((seed >> 1) % 18);
-  const chillQuotient = 82 + ((seed >> 2) % 18);
-  const creativeSpark = 82 + ((seed >> 3) % 18);
+  const cozyFactor = 82 + ((seed >>> 1) % 18);
+  const chillQuotient = 82 + ((seed >>> 2) % 18);
+  const creativeSpark = 82 + ((seed >>> 3) % 18);
   
   return {
     name: cleanName,

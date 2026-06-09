@@ -28,6 +28,8 @@
   --sans: 'Outfit', system-ui, -apple-system, sans-serif;
   --heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.2, 1.35, 0.34, 1);
 
   font: 17px/150% var(--sans);
   letter-spacing: 0.15px;
@@ -232,6 +234,278 @@ p {
   }
 }
 
+@keyframes softBounceIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes resultMoment {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.92);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.025);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes buttonTap {
+  0% {
+    transform: scale(0.97);
+  }
+  60% {
+    transform: scale(1.025);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes gentleShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes progressSweep {
+  from {
+    transform: translateX(-96%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes statFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes emojiBurst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+  }
+  16% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(var(--scale)) rotate(var(--rot));
+  }
+}
+
+@keyframes shareNudgeLoop {
+  0%, 72%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 6px 16px -4px rgba(37, 211, 102, 0.22);
+  }
+  4% {
+    transform: translateY(-2px) scale(1.018);
+    box-shadow: 0 0 0 5px rgba(37, 211, 102, 0.12), 0 12px 28px -8px rgba(37, 211, 102, 0.5);
+  }
+  8% {
+    transform: translateY(0) scale(0.995);
+  }
+  12% {
+    transform: translateY(-1px) scale(1.01);
+  }
+  18% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 6px 16px -4px rgba(37, 211, 102, 0.25);
+  }
+}
+
+@keyframes whatsappIconFly {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(10px, -22px, 0) scale(1.28) rotate(-8deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(18px, -34px, 0) scale(1.06) rotate(7deg);
+  }
+}
+
+@keyframes shareButtonPress {
+  0% {
+    transform: scale(0.96);
+  }
+  58% {
+    transform: scale(1.035);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shareFloatAway {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scale(0.65) rotate(0deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(-50% + var(--share-x)), var(--share-y), 0) scale(var(--share-scale)) rotate(var(--share-rot));
+  }
+}
+
+@keyframes shareGlowBloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes rewardBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  64% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shareSheetBackdropIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shareSheetIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 32px, 0) scale(0.98);
+  }
+  70% {
+    opacity: 1;
+    transform: translate3d(-50%, -4px, 0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+}
+
+@keyframes shareSheetBackdropOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes shareSheetOut {
+  from {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(-50%, 24px, 0) scale(0.98);
+  }
+}
+
+@keyframes shareSheetPulse {
+  0%, 100% {
+    box-shadow: 0 -12px 34px -26px rgba(79, 70, 229, 0.5), 0 0 0 0 rgba(160, 53, 252, 0.14);
+  }
+  50% {
+    box-shadow: 0 -14px 40px -24px rgba(79, 70, 229, 0.55), 0 0 0 5px rgba(160, 53, 252, 0.08);
+  }
+}
+
+@keyframes shareSheetShareTap {
+  0% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  45% {
+    transform: translate3d(-50%, 6px, 0) scale(0.965);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+}
+
+@keyframes whatsappWiggle {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  35% {
+    transform: rotate(-8deg) scale(1.08);
+  }
+  70% {
+    transform: rotate(7deg) scale(1.03);
+  }
+}
+
 @keyframes textReveal {
   from {
     opacity: 0;
@@ -245,6 +519,38 @@ p {
 
 .fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.motion-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  will-change: opacity, transform;
+}
+
+.motion-reveal.is-visible {
+  animation: fadeIn 0.42s var(--ease-out) var(--motion-delay, 0ms) both;
+}
+
+.motion-bounce.is-visible {
+  animation-name: softBounceIn;
+  animation-duration: 0.48s;
+  animation-timing-function: var(--ease-bounce);
+}
+
+.motion-pop.is-visible {
+  animation-name: popIn;
+  animation-duration: 0.36s;
+  animation-timing-function: var(--ease-bounce);
+}
+
+.motion-result.is-visible {
+  animation-name: resultMoment;
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease-bounce);
+}
+
+.motion-shake {
+  animation: gentleShake 0.28s var(--ease-out);
 }
 
 .float-anim {
@@ -261,6 +567,16 @@ p {
   padding: 28px 20px; /* Reduced padding on mobile for layout comfort */
   box-shadow: var(--shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .glass-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      rgba(160, 53, 252, 0.08) 0px 20px 44px -10px,
+      rgba(0, 0, 0, 0.03) 0px 10px 24px -5px,
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
 }
 
 @media (min-width: 480px) {
@@ -318,11 +634,21 @@ input[type="text"]:focus {
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
+  will-change: transform;
 }
 
 /* Tactile touch down scaling for buttons */
 .btn:active {
+  animation: buttonTap 0.24s var(--ease-bounce);
   transform: scale(0.97) !important;
+}
+
+.btn:hover .logo-emoji,
+.btn:active .logo-emoji,
+.archetype-badge:hover .archetype-emoji,
+.mascot-badge:hover .mascot-emoji,
+.form-badge:hover {
+  animation: popIn 0.32s var(--ease-bounce);
 }
 
 .btn-primary {
@@ -334,7 +660,7 @@ input[type="text"]:focus {
 @media (hover: hover) {
   .btn-primary:hover {
     background: var(--accent-light);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.015);
     box-shadow: 0 8px 20px -3px rgba(160, 53, 252, 0.45);
   }
 }
@@ -348,7 +674,7 @@ input[type="text"]:focus {
 @media (hover: hover) {
   .btn-secondary:hover {
     background: rgba(160, 53, 252, 0.12);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.015);
   }
 }
 
@@ -361,7 +687,24 @@ input[type="text"]:focus {
 @media (hover: hover) {
   .btn-whatsapp:hover {
     background: #20ba5a;
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.015);
     box-shadow: 0 8px 20px -3px rgba(37, 211, 102, 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .motion-reveal {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
   }
 }

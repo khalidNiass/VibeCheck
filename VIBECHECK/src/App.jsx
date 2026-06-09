@@ -3,6 +3,7 @@ import Header from './components/Header';
 import VibeForm from './components/VibeForm';
 import AuraScanner from './components/AuraScanner';
 import VibeCard from './components/VibeCard';
+import MotionReveal from './components/Motion';
 import { generateVibe } from './utils/vibeGenerator';
 import './App.css';
 
@@ -86,12 +87,12 @@ function App() {
       </main>
 
       {/* Brand Footer */}
-      <footer className="vibe-footer fade-in">
+      <MotionReveal as="footer" className="vibe-footer" delay={360} inView>
         <p>
           <strong>VibeCheck 🎭</strong> is built for curiosity and positive vibes.<br />
           No signup. No tracking. Made with positivity ✨.
         </p>
-      </footer>
+      </MotionReveal>
     </>
   );
 }

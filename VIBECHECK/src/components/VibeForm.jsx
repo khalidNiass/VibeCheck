@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import MotionReveal from './Motion';
 
 export default function VibeForm({ onSubmit, initialName = '' }) {
   const [name, setName] = useState(initialName);
@@ -31,14 +32,14 @@ export default function VibeForm({ onSubmit, initialName = '' }) {
   };
 
   return (
-    <div className="glass-panel form-card fade-in">
-      <h2 className="form-title">What's your vibe?</h2>
-      <p className="form-description">
+    <MotionReveal className="glass-panel form-card" variant="bounce">
+      <MotionReveal as="h2" className="form-title" delay={80}>What's your vibe?</MotionReveal>
+      <MotionReveal as="p" className="form-description" delay={140}>
         Discover how your aura feels to others. Get a positive, personalized vibe report in seconds!
-      </p>
+      </MotionReveal>
 
       <form onSubmit={handleSubmit} noValidate>
-        <div className="input-group">
+        <MotionReveal className="input-group" delay={200}>
           <label htmlFor="userName" className="sr-only">Your Name</label>
           <input
             ref={inputRef}
@@ -52,18 +53,18 @@ export default function VibeForm({ onSubmit, initialName = '' }) {
             autoComplete="off"
             className={error ? 'input-error' : ''}
           />
-          {error && <p className="error-message" role="alert">{error}</p>}
-        </div>
+          {error && <p className="error-message motion-shake" role="alert">{error}</p>}
+        </MotionReveal>
 
-        <button type="submit" className="btn btn-primary btn-submit">
+        <MotionReveal as="button" type="submit" className="btn btn-primary btn-submit" delay={260} variant="pop">
           Check My Vibe ✨
-        </button>
+        </MotionReveal>
       </form>
 
-      <div className="form-badge-row">
+      <MotionReveal className="form-badge-row" delay={340}>
         <span className="form-badge">🔒 Private & Secure</span>
         <span className="form-badge">✨ 100% Positive Only</span>
-      </div>
-    </div>
+      </MotionReveal>
+    </MotionReveal>
   );
 }

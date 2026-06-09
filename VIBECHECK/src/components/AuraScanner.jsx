@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import MotionReveal from './Motion';
 
 const SCAN_MESSAGES = [
   "Reading aura frequencies... 📡",
@@ -28,20 +29,23 @@ export default function AuraScanner({ onComplete }) {
   }, [onComplete]);
 
   return (
-    <div className="glass-panel scanner-card fade-in">
-      <div className="scanner-container">
+    <MotionReveal className="glass-panel scanner-card" variant="bounce">
+      <MotionReveal className="scanner-container" delay={80} variant="pop">
         {/* Outer glowing pulsing orb */}
         <div className="aura-glow-orb"></div>
         {/* Rotating ring */}
         <div className="scanner-ring"></div>
         <div className="scanner-inner-eye">✨</div>
-      </div>
-      <h3 className="scanner-heading">Scanning Aura</h3>
-      <div className="scanner-message-box">
+      </MotionReveal>
+      <MotionReveal as="h3" className="scanner-heading" delay={160}>Scanning Aura</MotionReveal>
+      <MotionReveal className="scanner-progress" delay={210} aria-hidden="true">
+        <span className="scanner-progress-fill"></span>
+      </MotionReveal>
+      <MotionReveal className="scanner-message-box" delay={250}>
         <p className="scanner-message text-reveal" key={messageIndex}>
           {SCAN_MESSAGES[messageIndex]}
         </p>
-      </div>
-    </div>
+      </MotionReveal>
+    </MotionReveal>
   );
 }

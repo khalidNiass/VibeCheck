@@ -1,7 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import EmojiBurst from './EmojiBurst';
+import MotionReveal from './Motion';
 
 export default function VibeCard({ vibe, onReset, isShared = false }) {
   const [toastMessage, setToastMessage] = useState('');
+  const [shareCelebrating, setShareCelebrating] = useState(false);
+  const [shareRewardVisible, setShareRewardVisible] = useState(false);
+  const [shareSheetVisible, setShareSheetVisible] = useState(false);
+  const [shareSheetDismissed, setShareSheetDismissed] = useState(false);
+  const [shareSheetClosing, setShareSheetClosing] = useState(false);
+  const shareTimers = useRef([]);
+
+  useEffect(() => {
+    return () => {
+      shareTimers.current.forEach((timer) => clearTimeout(timer));
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isShared || shareSheetDismissed) return undefined;
+
+    const timer = setTimeout(() => {
+      setShareSheetClosing(false);
+      setShareSheetVisible(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [isShared, shareSheetDismissed, vibe.name]);
 
   // Construct sharing URL
   const getShareUrl = () => {
@@ -45,47 +70,126 @@ Check what your vibe is here! 👇`;
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`;
   };
 
+  const handleWhatsAppShare = () => {
+    shareTimers.current.forEach((timer) => clearTimeout(timer));
+    setShareCelebrating(true);
+    setShareRewardVisible(true);
+    setShareSheetVisible(true);
+    setShareSheetClosing(false);
+
+    shareTimers.current = [
+      setTimeout(() => setShareCelebrating(false), 900),
+      setTimeout(() => setShareRewardVisible(false), 5200)
+    ];
+  };
+
+  const handleDismissShareSheet = () => {
+    setShareSheetDismissed(true);
+    setShareSheetClosing(true);
+    shareTimers.current = [
+      ...shareTimers.current,
+      setTimeout(() => {
+        setShareSheetVisible(false);
+        setShareSheetClosing(false);
+      }, 260)
+    ];
+  };
+
   return (
     <div className="vibe-card-container">
+      <EmojiBurst />
+      {shareCelebrating && (
+        <div className="share-celebration-layer" aria-hidden="true">
+          <span className="share-float-icon">💬</span>
+          <span className="share-float-icon">🎉</span>
+          <span className="share-float-icon">✨</span>
+          <span className="share-float-icon">💚</span>
+        </div>
+      )}
+
+      {!isShared && (shareSheetVisible || shareSheetClosing) && (
+        <div className={`share-sheet-backdrop ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`}>
+          <div className={`share-sheet ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`} role="region" aria-label="Share your VibeCheck result">
+            <button
+              type="button"
+              className="share-sheet-close"
+              onClick={handleDismissShareSheet}
+              aria-label="Close share prompt"
+            >
+              ×
+            </button>
+
+            {shareRewardVisible ? (
+              <div className="share-sheet-success" role="status">
+                <span className="share-sheet-success-icon">🎉</span>
+                <strong>Shared!</strong>
+                <span>Let's see what your friends get 👀</span>
+              </div>
+            ) : (
+              <>
+                <div className="share-sheet-kicker">Ta-da 🎉</div>
+                <h3 className="share-sheet-title">This result is share-worthy 😄</h3>
+                <p className="share-sheet-copy">Send it to your friends and see what vibe they get.</p>
+              </>
+            )}
+
+            <a
+              href={getWhatsAppShareUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`btn btn-whatsapp share-sheet-button ${shareCelebrating ? 'is-sharing' : ''}`}
+              onClick={handleWhatsAppShare}
+            >
+              <span className="whatsapp-button-icon">💬</span>
+              <span>Share on WhatsApp</span>
+            </a>
+
+            <button type="button" className="share-sheet-later" onClick={handleDismissShareSheet}>
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="toast-notification fade-in" role="alert">
+        <MotionReveal className="toast-notification" role="alert" variant="pop">
           {toastMessage}
-        </div>
+        </MotionReveal>
       )}
 
       {/* Shared Welcome Banner */}
       {isShared && (
-        <div className="shared-banner fade-in">
+        <MotionReveal className="shared-banner" variant="bounce">
           <span className="banner-wave">👋</span>
           <p className="banner-text">
             <strong>{vibe.name}</strong> shared their VibeCheck profile with you!
           </p>
-        </div>
+        </MotionReveal>
       )}
 
       {/* Main Glassmorphic Vibe Card */}
-      <div className={`glass-panel vibe-card ${vibe.themeClass} fade-in`}>
+      <MotionReveal className={`glass-panel vibe-card result-reveal ${vibe.themeClass}`} variant="result">
         {/* Glow backdrop inside the card */}
         <div className="card-aura-glow"></div>
 
-        <div className="card-header">
+        <MotionReveal className="card-header" delay={160}>
           <span className="profile-label">AURA SIGNATURE</span>
           <h2 className="profile-name">{vibe.name}</h2>
-        </div>
+        </MotionReveal>
 
-        <div className="archetype-badge float-anim">
+        <MotionReveal className="archetype-badge float-anim" delay={240} variant="pop">
           <span className="archetype-emoji">{vibe.emoji}</span>
           <h3 className="archetype-title">{vibe.archetypeTitle}</h3>
-        </div>
+        </MotionReveal>
 
-        <div className="vibe-divider"></div>
+        <MotionReveal className="vibe-divider" delay={300}></MotionReveal>
 
-        <p className="vibe-description">
+        <MotionReveal as="p" className="vibe-description" delay={360}>
           "{vibe.description}"
-        </p>
+        </MotionReveal>
 
-        <div className="stats-section">
+        <MotionReveal className="stats-section" delay={430} inView>
           {Object.entries(vibe.stats).map(([statName, val]) => (
             <div className="stat-row" key={statName}>
               <div className="stat-info">
@@ -100,18 +204,26 @@ Check what your vibe is here! 👇`;
               </div>
             </div>
           ))}
-        </div>
+        </MotionReveal>
 
-        <div className="mascot-badge">
+        <MotionReveal className="mascot-badge" delay={500} variant="pop">
           <span className="mascot-emoji">{vibe.mascotEmoji}</span>
           <span className="mascot-text">
             Spirit Charm: <strong>{vibe.mascotText}</strong>
           </span>
-        </div>
-      </div>
+        </MotionReveal>
+      </MotionReveal>
 
       {/* Sharing and Action Buttons */}
-      <div className="action-area fade-in">
+      <MotionReveal className="action-area" delay={580} inView>
+        {shareRewardVisible && !shareSheetVisible && (
+          <MotionReveal className="share-reward-message" variant="bounce" role="status">
+            <strong>Shared! 🎉</strong>
+            <span>Let's see what your friends get 😄</span>
+            <small>Your friends are going to love this 😎</small>
+          </MotionReveal>
+        )}
+
         {isShared ? (
           <>
             <button onClick={onReset} className="btn btn-primary btn-cta">
@@ -122,9 +234,11 @@ Check what your vibe is here! 👇`;
                 href={getWhatsAppShareUrl()} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="btn btn-whatsapp"
+                className={`btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`}
+                onClick={handleWhatsAppShare}
               >
-                Share {vibe.name}'s Vibe
+                <span className="whatsapp-button-icon">💬</span>
+                <span>Share {vibe.name}'s Vibe</span>
               </a>
               <button onClick={handleCopyLink} className="btn btn-secondary">
                 Copy Link
@@ -139,9 +253,11 @@ Check what your vibe is here! 👇`;
                 href={getWhatsAppShareUrl()} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="btn btn-whatsapp"
+                className={`btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`}
+                onClick={handleWhatsAppShare}
               >
-                Share on WhatsApp 💬
+                <span className="whatsapp-button-icon">💬</span>
+                <span>Share on WhatsApp</span>
               </a>
               <button onClick={handleCopyLink} className="btn btn-secondary">
                 Copy Vibe Link 🔗
@@ -152,7 +268,7 @@ Check what your vibe is here! 👇`;
             </button>
           </>
         )}
-      </div>
+      </MotionReveal>
     </div>
   );
 }
