@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="VibeCheck logo">
+  <defs>
+    <linearGradient id="bubble" x1="240" y1="210" x2="760" y2="790" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a035fc"/>
+      <stop offset="1" stop-color="#4f46e5"/>
+    </linearGradient>
+    <filter id="softShadow" x="180" y="180" width="680" height="680" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#4f46e5" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="#ffffff"/>
+  <circle cx="512" cy="512" r="356" fill="#a035fc" opacity="0.08"/>
+
+  <g filter="url(#softShadow)">
+    <path
+      fill="url(#bubble)"
+      d="M228 440c0-120.4 97.6-218 218-218h108c142.5 0 258 115.5 258 258s-115.5 258-258 258H437.8l-111.1 83.5c-20.2 15.2-49.1-1-46.5-26.1l15.9-151.1C255.6 605.5 228 550.4 228 488v-48Z"
+    />
+    <ellipse cx="422" cy="436" rx="92" ry="92" fill="#ffffff"/>
+    <ellipse cx="634" cy="386" rx="96" ry="96" fill="#ffffff"/>
+    <ellipse cx="422" cy="436" rx="56" ry="56" fill="#7df5cd"/>
+    <ellipse cx="634" cy="386" rx="58" ry="58" fill="#ffe674"/>
+    <path
+      d="M390 548c34 48 116 77 188 24"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="30"
+      stroke-linecap="round"
+    />
+    <path
+      d="M716 218 735 274 791 293 735 312 716 368 697 312 641 293 697 274Z"
+      fill="#ffe674"
+    />
+    <path
+      d="M272 624 286 665 327 679 286 693 272 734 258 693 217 679 258 665Z"
+      fill="#7df5cd"
+    />
+  </g>
+</svg>

@@ -66,7 +66,7 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
 "${vibe.description}"
 
 Check what your vibe is here! 👇`;
-    
+
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`;
   };
 
@@ -197,8 +197,8 @@ Check what your vibe is here! 👇`;
                 <span className="stat-value">{val}%</span>
               </div>
               <div className="stat-bar-container">
-                <div 
-                  className="stat-bar-fill" 
+                <div
+                  className="stat-bar-fill"
                   style={{ width: `${val}%` }}
                 ></div>
               </div>
@@ -229,11 +229,11 @@ Check what your vibe is here! 👇`;
             <button onClick={onReset} className="btn btn-primary btn-cta">
               Check My Vibe 🎭
             </button>
-            <div className="button-grid">
-              <a 
-                href={getWhatsAppShareUrl()} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+            <div className="share-section-card">
+              <a
+                href={getWhatsAppShareUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`}
                 onClick={handleWhatsAppShare}
               >
@@ -247,12 +247,12 @@ Check what your vibe is here! 👇`;
           </>
         ) : (
           <>
-            <div className="sharing-headline">✨ Spread the Good Vibes! ✨</div>
-            <div className="button-grid">
-              <a 
-                href={getWhatsAppShareUrl()} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+            <div className="share-section-card">
+              <div className="sharing-headline">✨ Spread the Good Vibes! ✨</div>
+              <a
+                href={getWhatsAppShareUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`}
                 onClick={handleWhatsAppShare}
               >
