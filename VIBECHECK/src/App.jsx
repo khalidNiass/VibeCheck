@@ -1,0 +1,99 @@
+import { useState } from 'react';
+import Header from './components/Header';
+import VibeForm from './components/VibeForm';
+import AuraScanner from './components/AuraScanner';
+import VibeCard from './components/VibeCard';
+import { generateVibe } from './utils/vibeGenerator';
+import './App.css';
+
+function App() {
+  // Parse query parameters on load to check if viewing a shared vibe (lazy init)
+  const [initialState] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const nameParam = params.get('name') || params.get('n');
+      if (nameParam) {
+        const cleanName = nameParam.trim();
+        if (cleanName) {
+          const vibe = generateVibe(cleanName);
+          if (vibe) {
+            return { name: cleanName, currentVibe: vibe, screen: 'shared' };
+          }
+        }
+      }
+    }
+    return { name: '', currentVibe: null, screen: 'home' };
+  });
+
+  const [name, setName] = useState(initialState.name);
+  const [currentVibe, setCurrentVibe] = useState(initialState.currentVibe);
+  const [screen, setScreen] = useState(initialState.screen);
+
+  // Handler for submitting a name
+  const handleStartScan = (submittedName) => {
+    setName(submittedName);
+    setScreen('scanning');
+  };
+
+  // Handler for when the scanner animation completes
+  const handleScanComplete = () => {
+    const vibe = generateVibe(name);
+    if (vibe) {
+      setCurrentVibe(vibe);
+      setScreen('result');
+      
+      // Update the browser URL without page reload so users can copy the address bar directly
+      const newUrl = `${window.location.pathname}?name=${encodeURIComponent(vibe.name)}`;
+      window.history.pushState({ name: vibe.name }, '', newUrl);
+    } else {
+      // In case of error, go back to form
+      setScreen('home');
+    }
+  };
+
+  // Handler to clear state and return to form
+  const handleReset = () => {
+    setName('');
+    setCurrentVibe(null);
+    setScreen('home');
+    
+    // Clear query parameter from the browser URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
+
+  return (
+    <>
+      {/* Brand Header */}
+      <Header />
+
+      {/* Main Content Area */}
+      <main className="vibe-main-content">
+        {screen === 'home' && (
+          <VibeForm onSubmit={handleStartScan} initialName={name} />
+        )}
+        
+        {screen === 'scanning' && (
+          <AuraScanner onComplete={handleScanComplete} />
+        )}
+        
+        {screen === 'result' && currentVibe && (
+          <VibeCard vibe={currentVibe} onReset={handleReset} isShared={false} />
+        )}
+        
+        {screen === 'shared' && currentVibe && (
+          <VibeCard vibe={currentVibe} onReset={handleReset} isShared={true} />
+        )}
+      </main>
+
+      {/* Brand Footer */}
+      <footer className="vibe-footer fade-in">
+        <p>
+          <strong>VibeCheck 🎭</strong> is built for curiosity and positive vibes.<br />
+          No signup. No tracking. Made with positivity ✨.
+        </p>
+      </footer>
+    </>
+  );
+}
+
+export default App;
