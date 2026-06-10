@@ -46,7 +46,7 @@ function App() {
     if (vibe) {
       setCurrentVibe(vibe);
       setScreen('result');
-      
+
       // Update the browser URL without page reload so users can copy the address bar directly
       const newUrl = `${window.location.pathname}?name=${encodeURIComponent(vibe.name)}&v=${encodeURIComponent(vibe.shareVariant)}`;
       window.history.pushState({ name: vibe.name }, '', newUrl);
@@ -62,7 +62,7 @@ function App() {
     setScanSignals(null);
     setCurrentVibe(null);
     setScreen('home');
-    
+
     // Clear query parameter from the browser URL
     window.history.replaceState({}, document.title, window.location.pathname);
   };
@@ -77,15 +77,15 @@ function App() {
         {screen === 'home' && (
           <VibeForm onSubmit={handleStartScan} initialName={name} />
         )}
-        
+
         {screen === 'scanning' && (
           <AuraScanner onComplete={handleScanComplete} />
         )}
-        
+
         {screen === 'result' && currentVibe && (
           <VibeCard vibe={currentVibe} onReset={handleReset} isShared={false} />
         )}
-        
+
         {screen === 'shared' && currentVibe && (
           <VibeCard vibe={currentVibe} onReset={handleReset} isShared={true} />
         )}

@@ -280,7 +280,7 @@ What vibe do you get? 👀`;
           </>
         )}
       </MotionReveal>
-{/* 
+      {/* 
       <div className="result-social-panel">
         <SocialLinkButtons ariaLabelPrefix="Open" />
       </div> */}
