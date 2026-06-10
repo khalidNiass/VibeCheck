@@ -11,13 +11,64 @@ export function hashCode(str) {
 
 const AGE_FLAVORS = ['playful', 'confident', 'grounded'];
 const TIME_SHIFTS = ['fresh', 'social', 'deep'];
+const GENDER_FLAVORS = ['neutral', 'masculine', 'feminine'];
+
+const NAME_PATTERN = /^[\p{L}][\p{L}\s'\u2019-]{0,18}[\p{L}]$/u;
+const EMOJI_PATTERN = /[\u{1f300}-\u{1faff}\u{2600}-\u{27bf}]/u;
+
+export function validateName(name) {
+  if (!name || typeof name !== 'string') {
+    return { isValid: false, value: '', message: 'Please enter your name first!' };
+  }
+
+  const cleanName = name.trim().replace(/\s+/g, ' ');
+  const compact = cleanName.replace(/[\s'\u2019-]/g, '');
+
+  if (!cleanName) {
+    return { isValid: false, value: '', message: 'Please enter your name first!' };
+  }
+
+  if (cleanName.length < 2 || cleanName.length > 20) {
+    return {
+      isValid: false,
+      value: cleanName,
+      message: 'Use a real name between 2 and 20 characters.'
+    };
+  }
+
+  if (!compact || !/\p{L}/u.test(compact) || EMOJI_PATTERN.test(cleanName)) {
+    return {
+      isValid: false,
+      value: cleanName,
+      message: 'Use letters only, with spaces, hyphens, or apostrophes if needed.'
+    };
+  }
+
+  if (!NAME_PATTERN.test(cleanName)) {
+    return {
+      isValid: false,
+      value: cleanName,
+      message: 'Use letters only, with spaces, hyphens, or apostrophes if needed.'
+    };
+  }
+
+  if (/([^\p{L}\s])\1{1,}/u.test(cleanName) || /(.)\1{4,}/u.test(compact.toLowerCase())) {
+    return {
+      isValid: false,
+      value: cleanName,
+      message: 'That name looks a little too spammy for a vibe check.'
+    };
+  }
+
+  return { isValid: true, value: cleanName, message: '' };
+}
 
 function pickBySeed(items, seed, shift = 0) {
   return items[(seed >>> shift) % items.length];
 }
 
 function hasEmoji(value) {
-  return /[\u{1f300}-\u{1faff}\u{2600}-\u{27bf}]/u.test(value);
+  return EMOJI_PATTERN.test(value);
 }
 
 function getTimeShift(date = new Date()) {
@@ -64,7 +115,8 @@ function inferAgeFlavor(name, signals = {}, seed = 0) {
 export function encodeVibeContext(context = {}) {
   const ageIndex = Math.max(0, AGE_FLAVORS.indexOf(context.ageFlavor));
   const timeIndex = Math.max(0, TIME_SHIFTS.indexOf(context.timeShift));
-  return `${ageIndex}${timeIndex}`;
+  const genderIndex = Math.max(0, GENDER_FLAVORS.indexOf(context.genderFlavor));
+  return `${ageIndex}${timeIndex}${genderIndex}`;
 }
 
 export function decodeVibeContext(token) {
@@ -72,18 +124,49 @@ export function decodeVibeContext(token) {
 
   const ageIndex = Number(token[0]);
   const timeIndex = Number(token[1]);
+  const genderIndex = Number(token[2]);
 
   return {
     ageFlavor: AGE_FLAVORS[ageIndex],
-    timeShift: TIME_SHIFTS[timeIndex]
+    timeShift: TIME_SHIFTS[timeIndex],
+    genderFlavor: GENDER_FLAVORS[genderIndex]
   };
+}
+
+function inferGenderFlavor(name, seed = 0) {
+  const clean = name.trim().toLowerCase();
+  const firstName = clean.split(/\s+/)[0].replace(/[^a-z]/g, '');
+  let masculine = 0;
+  let feminine = 0;
+
+  if (/^(alex|sam|taylor|jordan|casey|jamie|morgan|riley|avery|quinn|skyler|charlie|sage|river)$/.test(firstName)) {
+    return 'neutral';
+  }
+
+  if (/^(john|michael|david|james|robert|paul|daniel|mark|peter|thomas|william|joseph|kevin|brian|george|henry|leo|liam|noah|lucas|mason|logan|ethan|oliver)$/.test(firstName)) {
+    masculine += 3;
+  }
+
+  if (/^(mary|sarah|anna|maria|elizabeth|patricia|linda|jennifer|emily|emma|olivia|sophia|isabella|mia|amelia|ava|ella|grace|chloe|lily|zoe|nora)$/.test(firstName)) {
+    feminine += 3;
+  }
+
+  if (/(a|ia|na|elle|ette|ine|lyn|ley|ie|y)$/.test(firstName)) feminine += 1;
+  if (/(o|us|er|an|on|ck|rd|m)$/.test(firstName)) masculine += 1;
+
+  if (Math.abs(feminine - masculine) < 2) {
+    return (seed >>> 13) % 5 === 0 ? pickBySeed(['masculine', 'feminine'], seed, 15) : 'neutral';
+  }
+
+  return feminine > masculine ? 'feminine' : 'masculine';
 }
 
 export function createVibeContext(name, signals = {}) {
   const seed = hashCode(name.trim().toLowerCase());
   return {
     ageFlavor: inferAgeFlavor(name, signals, seed),
-    timeShift: getTimeShift()
+    timeShift: getTimeShift(),
+    genderFlavor: inferGenderFlavor(name, seed)
   };
 }
 
@@ -167,6 +250,24 @@ const TIME_TONE = {
   ]
 };
 
+const GENDER_TONE = {
+  masculine: [
+    'with a steady, direct kind of charm',
+    'with grounded confidence that feels easy to trust',
+    'with clear, upbeat energy that holds the room'
+  ],
+  feminine: [
+    'with expressive warmth that makes people feel welcome',
+    'with bright intuition and an easy social spark',
+    'with graceful confidence that feels memorable'
+  ],
+  neutral: [
+    'with balanced energy that adapts beautifully',
+    'with open, easygoing charm that feels natural',
+    'with a flexible spark that fits any room'
+  ]
+};
+
 const THEMES = [
   { id: 'theme-violet-glow', name: 'Violet Glow' },
   { id: 'theme-cosmic-sage', name: 'Cosmic Sage' },
@@ -190,17 +291,18 @@ const MASCOTS = [
 const SHARE_HOOKS = [
   'I just got my VibeCheck 😄',
   'This VibeCheck result felt a little too accurate 👀',
-  'My vibe result just dropped ✨',
+  'My VibeCheck result just dropped ✨',
   'I tried VibeCheck and this is what I got 😄'
 ];
 
-function composeDescription(seed, ageFlavor, timeShift) {
+function composeDescription(seed, ageFlavor, timeShift, genderFlavor) {
   const coreTrait = pickBySeed(CORE_TRAITS, seed, 2);
   const emotionalEnergy = pickBySeed(EMOTIONAL_ENERGIES, seed, 4);
   const ageTone = pickBySeed(AGE_TONE[ageFlavor], seed, 6);
   const timeTone = pickBySeed(TIME_TONE[timeShift], seed, 8);
+  const genderTone = pickBySeed(GENDER_TONE[genderFlavor], seed, 10);
 
-  return `You give off ${timeTone} energy that blends ${coreTrait}. You feel ${ageTone}, and ${emotionalEnergy}.`;
+  return `You give off ${timeTone} energy that blends ${coreTrait}, ${genderTone}. You feel ${ageTone}, and ${emotionalEnergy}.`;
 }
 
 function buildShareText(vibe) {
@@ -221,14 +323,16 @@ export function generateVibe(name, options = {}) {
     return null;
   }
 
-  const cleanName = name.trim();
-  if (!cleanName) return null;
+  const validation = validateName(name);
+  if (!validation.isValid) return null;
 
+  const cleanName = validation.value;
   const lowerName = cleanName.toLowerCase();
   const seed = hashCode(lowerName);
   const decoded = decodeVibeContext(options.variant);
   const ageFlavor = options.ageFlavor || decoded.ageFlavor || inferAgeFlavor(cleanName, options.signals, seed);
   const timeShift = options.timeShift || decoded.timeShift || getTimeShift();
+  const genderFlavor = options.genderFlavor || decoded.genderFlavor || inferGenderFlavor(cleanName, seed);
 
   const archetype = pickBySeed(ARCHETYPES, seed, 6);
   const theme = pickBySeed(THEMES, seed, 8);
@@ -243,12 +347,13 @@ export function generateVibe(name, options = {}) {
     name: cleanName,
     archetypeTitle: archetype.title,
     emoji: archetype.emoji,
-    description: composeDescription(seed, ageFlavor, timeShift),
+    description: composeDescription(seed, ageFlavor, timeShift, genderFlavor),
+    genderFlavor,
     themeClass: theme.id,
     themeName: theme.name,
     mascotText: mascot.text,
     mascotEmoji: mascot.emoji,
-    shareVariant: encodeVibeContext({ ageFlavor, timeShift }),
+    shareVariant: encodeVibeContext({ ageFlavor, timeShift, genderFlavor }),
     stats: {
       'Aura Glow': auraGlow,
       'Social Spark': socialSpark,

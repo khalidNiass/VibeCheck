@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import EmojiBurst from './EmojiBurst';
 import MotionReveal from './Motion';
-import { SocialLinkButtons } from './SocialLinks';
 
 export default function VibeCard({ vibe, onReset, isShared = false }) {
   const [toastMessage, setToastMessage] = useState('');
@@ -280,10 +279,6 @@ What vibe do you get? 👀`;
           </>
         )}
       </MotionReveal>
-      {/* 
-      <div className="result-social-panel">
-        <SocialLinkButtons ariaLabelPrefix="Open" />
-      </div> */}
     </div>
   );
 }

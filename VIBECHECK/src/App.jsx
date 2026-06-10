@@ -5,7 +5,7 @@ import AuraScanner from './components/AuraScanner';
 import VibeCard from './components/VibeCard';
 import MotionReveal from './components/Motion';
 import { SocialLinkButtons } from './components/SocialLinks';
-import { generateVibe } from './utils/vibeGenerator';
+import { generateVibe, validateName } from './utils/vibeGenerator';
 import './App.css';
 
 function App() {
@@ -16,11 +16,11 @@ function App() {
       const nameParam = params.get('name') || params.get('n');
       const variantParam = params.get('v');
       if (nameParam) {
-        const cleanName = nameParam.trim();
-        if (cleanName) {
-          const vibe = generateVibe(cleanName, { variant: variantParam });
+        const validation = validateName(nameParam);
+        if (validation.isValid) {
+          const vibe = generateVibe(validation.value, { variant: variantParam });
           if (vibe) {
-            return { name: cleanName, currentVibe: vibe, screen: 'shared' };
+            return { name: validation.value, currentVibe: vibe, screen: 'shared' };
           }
         }
       }
