@@ -13,14 +13,7 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
   const closeTimer = useRef(null);
   const shareDialogRef = useRef(null);
 
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    if (isShared) return true;
-    try {
-      return sessionStorage.getItem(`vibecheck_unlocked_${vibe.name}_${vibe.shareVariant}`) === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [isUnlocked, setIsUnlocked] = useState(true);
   const [showUnlockBadge, setShowUnlockBadge] = useState(false);
 
   useEffect(() => {
@@ -67,7 +60,7 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
   }, [vibe.name, vibe.shareVariant]);
 
   useEffect(() => {
-    if (isShared || isUnlocked) return undefined;
+    if (isShared) return undefined;
 
     const timer = setTimeout(() => {
       setShareSheetClosing(false);
@@ -75,7 +68,7 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [isShared, isUnlocked, vibe.name]);
+  }, [isShared, vibe.name]);
 
   useEffect(() => {
     if (!shareSheetVisible || shareSheetClosing) return undefined;
@@ -174,12 +167,6 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
     }
   };
 
-  const getWhatsAppShareUrl = () => {
-    const shareUrl = getShareUrl();
-    const text = vibe.shareText || `I just got my VibeCheck 😄\n\n${vibe.emoji} ${vibe.archetypeTitle}\n"${vibe.description}"\n\nWhat vibe do you get? 👀`;
-    return `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`;
-  };
-
   const handleWhatsAppShare = () => {
     shareTimers.current.forEach((timer) => clearTimeout(timer));
 
@@ -193,12 +180,16 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
   };
 
   const handleNativeShare = async () => {
-    if (!navigator.share) return;
+    if (typeof navigator === 'undefined' || !navigator.share) {
+      setToastMessage('More sharing options are not available here. WhatsApp is ready to go.');
+      setTimeout(() => setToastMessage(''), 3000);
+      return;
+    }
 
     try {
       await navigator.share({
         title: `${vibe.name}'s VibeCheck`,
-        text: vibe.shareText,
+        text: vibe.shareText || `${vibe.name}'s VibeCheck is ${vibe.archetypeTitle} ${vibe.emoji}`,
         url: getShareUrl()
       });
       completeShareUnlock();
@@ -210,33 +201,40 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
     }
   };
 
-  const renderShareButton = (label, className) => {
-    if (navigator.share) {
-      return (
-        <button
-          type="button"
-          className={className}
-          onClick={handleNativeShare}
-        >
-          <span className="whatsapp-button-icon">💬</span>
-          <span>{label}</span>
-        </button>
-      );
-    }
-
-    return (
-      <a
-        href={getWhatsAppShareUrl()}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={className}
-        onClick={handleWhatsAppShare}
-      >
-        <span className="whatsapp-button-icon">💬</span>
-        <span>{label}</span>
-      </a>
-    );
+  const getPrimaryWhatsAppShareUrl = () => {
+    const shareUrl = getShareUrl();
+    const text = [
+      '\uD83D\uDC9A Okay this VibeCheck got weirdly accurate \uD83D\uDC40',
+      vibe.emoji + ' ' + vibe.name + "'s vibe came out as: " + vibe.archetypeTitle,
+      'Now I need to know what yours says \uD83D\uDE04',
+      shareUrl
+    ].join('\n\n');
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
   };
+
+  const renderPrimaryWhatsAppButton = (className) => (
+    <a
+      href={getPrimaryWhatsAppShareUrl()}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+      onClick={handleWhatsAppShare}
+    >
+      <span className="whatsapp-button-icon">WA</span>
+      <span className="share-button-label">{'\uD83D\uDC9A'} Share on WhatsApp</span>
+    </a>
+  );
+
+  const renderMoreShareButton = (className = 'btn btn-secondary btn-share-secondary') => (
+    <button
+      type="button"
+      className={className}
+      onClick={handleNativeShare}
+    >
+      <span aria-hidden="true">+</span>
+      <span className="share-button-label">More ways to share</span>
+    </button>
+  );
 
   return (
     <div className="vibe-card-container">
@@ -273,12 +271,12 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
 
             <div className="share-sheet-kicker">Ta-da 🎉</div>
             <h3 id="share-sheet-title" className="share-sheet-title">This result is share worthy 😄</h3>
-            <p id="share-sheet-copy" className="share-sheet-copy">Send it to your friends to unlock your full message.</p>
+            <p id="share-sheet-copy" className="share-sheet-copy">Send it to the group chat and see who gets the most surprising match.</p>
 
-            {renderShareButton(
-              navigator.share ? 'Share Result' : 'Share on WhatsApp',
+            {renderPrimaryWhatsAppButton(
               `btn btn-whatsapp share-sheet-button ${shareCelebrating ? 'is-sharing' : ''}`
             )}
+            {renderMoreShareButton()}
           </div>
         </div>
       )}
@@ -319,7 +317,7 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
         <MotionReveal className="vibe-divider" delay={300}></MotionReveal>
 
         <MotionReveal className="vibe-description-wrapper" delay={360}>
-          <p className={`vibe-description ${(!isUnlocked && !isShared) ? 'is-gated' : ''}`}>
+          <p className="vibe-description">
             "{vibe.description}"
           </p>
           {!isUnlocked && !isShared && (
@@ -376,10 +374,10 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
               Check My Vibe 🎭
             </button>
             <div className="share-section-card">
-              {renderShareButton(
-                `Share ${vibe.name}'s Vibe`,
+              {renderPrimaryWhatsAppButton(
                 `btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`
               )}
+              {renderMoreShareButton()}
               <button onClick={handleCopyLink} className="btn btn-secondary">
                 Copy Link
               </button>
@@ -389,10 +387,10 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
           <>
             <div className="share-section-card">
               <div className="sharing-headline">✨ Spread the Good Vibes! ✨</div>
-              {renderShareButton(
-                navigator.share ? 'Share Result' : 'Share on WhatsApp',
+              {renderPrimaryWhatsAppButton(
                 `btn btn-whatsapp btn-share-magnet ${(!isUnlocked && !isShared) ? 'pulse-glow' : ''} ${shareCelebrating ? 'is-sharing' : ''}`
               )}
+              {renderMoreShareButton()}
               <button onClick={handleCopyLink} className="btn btn-secondary">
                 Copy Vibe Link 🔗
               </button>

@@ -781,6 +781,22 @@
   word-wrap: break-word;
 }
 
+.share-button-label {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.btn-share-secondary {
+  min-height: 42px;
+  padding: 9px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: none;
+}
+
 .share-sheet-button .whatsapp-button-icon {
   animation: whatsappWiggle 1.8s var(--ease-bounce) 0.6s infinite;
   flex-shrink: 0;
@@ -797,9 +813,10 @@
   animation: shareNudgeLoop 10s var(--ease-out) 0.8s infinite;
   text-decoration: none;
   white-space: normal;
-  min-height: 50px;
+  min-height: 58px;
   height: auto;
-  padding: 12px 16px;
+  padding: 14px 16px;
+  font-size: 17px;
 }
 
 .btn-share-magnet::before {
