@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import EmojiBurst from './EmojiBurst';
 import MotionReveal from './Motion';
 
@@ -6,7 +6,12 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
   const [toastMessage, setToastMessage] = useState('');
   const [shareCelebrating, setShareCelebrating] = useState(false);
   const [shareRewardVisible, setShareRewardVisible] = useState(false);
+  const [shareSheetVisible, setShareSheetVisible] = useState(false);
+  const [shareSheetClosing, setShareSheetClosing] = useState(false);
+  const [sharePending, setSharePending] = useState(false);
   const shareTimers = useRef([]);
+  const closeTimer = useRef(null);
+  const shareDialogRef = useRef(null);
 
   const [isUnlocked, setIsUnlocked] = useState(() => {
     if (isShared) return true;
@@ -21,8 +26,119 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
   useEffect(() => {
     return () => {
       shareTimers.current.forEach((timer) => clearTimeout(timer));
+      clearTimeout(closeTimer.current);
     };
   }, []);
+
+  const closeShareSheet = useCallback(() => {
+    clearTimeout(closeTimer.current);
+    if (!shareSheetVisible) return;
+
+    setShareSheetClosing(true);
+    closeTimer.current = setTimeout(() => {
+      setShareSheetVisible(false);
+      setShareSheetClosing(false);
+    }, 240);
+  }, [shareSheetVisible]);
+
+  const completeShareUnlock = useCallback(() => {
+    shareTimers.current.forEach((timer) => clearTimeout(timer));
+    clearTimeout(closeTimer.current);
+
+    setSharePending(false);
+    setIsUnlocked(true);
+    setShowUnlockBadge(true);
+    setShareCelebrating(true);
+    setShareRewardVisible(true);
+    setShareSheetVisible(false);
+    setShareSheetClosing(false);
+
+    try {
+      sessionStorage.setItem(`vibecheck_unlocked_${vibe.name}_${vibe.shareVariant}`, 'true');
+    } catch (e) {
+      console.warn('sessionStorage is not accessible', e);
+    }
+
+    shareTimers.current = [
+      setTimeout(() => setShareCelebrating(false), 900),
+      setTimeout(() => setShareRewardVisible(false), 5200),
+      setTimeout(() => setShowUnlockBadge(false), 4000)
+    ];
+  }, [vibe.name, vibe.shareVariant]);
+
+  useEffect(() => {
+    if (isShared || isUnlocked) return undefined;
+
+    const timer = setTimeout(() => {
+      setShareSheetClosing(false);
+      setShareSheetVisible(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [isShared, isUnlocked, vibe.name]);
+
+  useEffect(() => {
+    if (!shareSheetVisible || shareSheetClosing) return undefined;
+
+    const dialog = shareDialogRef.current;
+    const focusable = dialog?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    focusable?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        closeShareSheet();
+        return;
+      }
+
+      if (event.key === 'Tab' && dialog) {
+        const focusableElements = Array.from(
+          dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+        ).filter((element) => !element.disabled && element.offsetParent !== null);
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+
+        if (!first || !last) return;
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [closeShareSheet, shareSheetClosing, shareSheetVisible]);
+
+  useEffect(() => {
+    if (!sharePending) return undefined;
+
+    let armed = false;
+    const armTimer = setTimeout(() => {
+      armed = true;
+    }, 300);
+
+    const completeWhenReturned = () => {
+      if (armed && document.visibilityState === 'visible') {
+        completeShareUnlock();
+      }
+    };
+
+    window.addEventListener('focus', completeWhenReturned);
+    window.addEventListener('pageshow', completeWhenReturned);
+    document.addEventListener('visibilitychange', completeWhenReturned);
+
+    return () => {
+      clearTimeout(armTimer);
+      window.removeEventListener('focus', completeWhenReturned);
+      window.removeEventListener('pageshow', completeWhenReturned);
+      document.removeEventListener('visibilitychange', completeWhenReturned);
+    };
+  }, [completeShareUnlock, sharePending]);
 
   // Construct sharing URL
   const getShareUrl = () => {
@@ -66,38 +182,104 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
 
   const handleWhatsAppShare = () => {
     shareTimers.current.forEach((timer) => clearTimeout(timer));
-    
-    // Instantly unlock and celebrate
-    setIsUnlocked(true);
-    setShowUnlockBadge(true);
-    setShareCelebrating(true);
-    setShareRewardVisible(true);
 
-    try {
-      sessionStorage.setItem(`vibecheck_unlocked_${vibe.name}_${vibe.shareVariant}`, 'true');
-    } catch (e) {
-      console.warn('sessionStorage is not accessible', e);
-    }
+    setSharePending(true);
+    setShareCelebrating(true);
+    closeShareSheet();
 
     shareTimers.current = [
-      setTimeout(() => setShareCelebrating(false), 2500),
-      setTimeout(() => setShareRewardVisible(false), 5200),
-      setTimeout(() => setShowUnlockBadge(false), 4000)
+      setTimeout(() => setShareCelebrating(false), 900)
     ];
+  };
+
+  const handleNativeShare = async () => {
+    if (!navigator.share) return;
+
+    try {
+      await navigator.share({
+        title: `${vibe.name}'s VibeCheck`,
+        text: vibe.shareText,
+        url: getShareUrl()
+      });
+      completeShareUnlock();
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        setToastMessage('Sharing was not available. Try WhatsApp or copy the link.');
+        setTimeout(() => setToastMessage(''), 3000);
+      }
+    }
+  };
+
+  const renderShareButton = (label, className) => {
+    if (navigator.share) {
+      return (
+        <button
+          type="button"
+          className={className}
+          onClick={handleNativeShare}
+        >
+          <span className="whatsapp-button-icon">💬</span>
+          <span>{label}</span>
+        </button>
+      );
+    }
+
+    return (
+      <a
+        href={getWhatsAppShareUrl()}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        onClick={handleWhatsAppShare}
+      >
+        <span className="whatsapp-button-icon">💬</span>
+        <span>{label}</span>
+      </a>
+    );
   };
 
   return (
     <div className="vibe-card-container">
       <EmojiBurst />
-      {shareCelebrating && (
-        <EmojiBurst key="unlock-celebration-burst" />
-      )}
-      {shareCelebrating && (
-        <div className="share-celebration-layer" aria-hidden="true">
-          <span className="share-float-icon">💬</span>
-          <span className="share-float-icon">🎉</span>
-          <span className="share-float-icon">✨</span>
-          <span className="share-float-icon">💚</span>
+
+      {/* Share Sheet modal - Strict gating mode */}
+      {!isShared && (shareSheetVisible || shareSheetClosing) && (
+        <div
+          className={`share-sheet-backdrop ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeShareSheet();
+          }}
+        >
+          <div
+            ref={shareDialogRef}
+            className={`share-sheet ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="share-sheet-title"
+            aria-describedby="share-sheet-copy"
+          >
+            <button
+              type="button"
+              className="share-sheet-close"
+              aria-label="Close share prompt"
+              onClick={closeShareSheet}
+            >
+              ×
+            </button>
+            <div className="share-sheet-brand" aria-hidden="true">
+              <img src="/logo.png" alt="" />
+              <span>VibeCheck</span>
+            </div>
+
+            <div className="share-sheet-kicker">Ta-da 🎉</div>
+            <h3 id="share-sheet-title" className="share-sheet-title">This result is share worthy 😄</h3>
+            <p id="share-sheet-copy" className="share-sheet-copy">Send it to your friends to unlock your full message.</p>
+
+            {renderShareButton(
+              navigator.share ? 'Share Result' : 'Share on WhatsApp',
+              `btn btn-whatsapp share-sheet-button ${shareCelebrating ? 'is-sharing' : ''}`
+            )}
+          </div>
         </div>
       )}
 
@@ -142,7 +324,7 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
           </p>
           {!isUnlocked && !isShared && (
             <div className="vibe-description-overlay">
-              <span className="lock-icon" aria-hidden="true">✨</span>
+              <span className="lock-icon" aria-hidden="true">🔒</span>
               <span className="lock-text">Share your vibe to unlock the full message ✨</span>
             </div>
           )}
@@ -180,7 +362,7 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
 
       {/* Sharing and Action Buttons */}
       <MotionReveal className="action-area" delay={580} inView>
-        {shareRewardVisible && (
+        {shareRewardVisible && !shareSheetVisible && (
           <MotionReveal className="share-reward-message" variant="bounce" role="status">
             <strong>Shared! 🎉</strong>
             <span>Let's see what your friends get 😄</span>
@@ -194,16 +376,10 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
               Check My Vibe 🎭
             </button>
             <div className="share-section-card">
-              <a
-                href={getWhatsAppShareUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`}
-                onClick={handleWhatsAppShare}
-              >
-                <span className="whatsapp-button-icon">💬</span>
-                <span>Share {vibe.name}'s Vibe</span>
-              </a>
+              {renderShareButton(
+                `Share ${vibe.name}'s Vibe`,
+                `btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`
+              )}
               <button onClick={handleCopyLink} className="btn btn-secondary">
                 Copy Link
               </button>
@@ -213,16 +389,10 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
           <>
             <div className="share-section-card">
               <div className="sharing-headline">✨ Spread the Good Vibes! ✨</div>
-              <a
-                href={getWhatsAppShareUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`btn btn-whatsapp btn-share-magnet ${(!isUnlocked && !isShared) ? 'pulse-glow' : ''} ${shareCelebrating ? 'is-sharing' : ''}`}
-                onClick={handleWhatsAppShare}
-              >
-                <span className="whatsapp-button-icon">💬</span>
-                <span>Share on WhatsApp</span>
-              </a>
+              {renderShareButton(
+                navigator.share ? 'Share Result' : 'Share on WhatsApp',
+                `btn btn-whatsapp btn-share-magnet ${(!isUnlocked && !isShared) ? 'pulse-glow' : ''} ${shareCelebrating ? 'is-sharing' : ''}`
+              )}
               <button onClick={handleCopyLink} className="btn btn-secondary">
                 Copy Vibe Link 🔗
               </button>

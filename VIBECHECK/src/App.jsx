@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from './components/Header';
 import VibeForm from './components/VibeForm';
 import AuraScanner from './components/AuraScanner';
@@ -8,30 +8,47 @@ import { SocialLinkButtons } from './components/SocialLinks';
 import { generateVibe, validateName } from './utils/vibeGenerator';
 import './App.css';
 
-function App() {
-  // Parse query parameters on load to check if viewing a shared vibe (lazy init)
-  const [initialState] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const nameParam = params.get('name') || params.get('n');
-      const variantParam = params.get('v');
-      if (nameParam) {
-        const validation = validateName(nameParam);
-        if (validation.isValid) {
-          const vibe = generateVibe(validation.value, { variant: variantParam });
-          if (vibe) {
-            return { name: validation.value, currentVibe: vibe, screen: 'shared' };
-          }
+function getStateFromUrl() {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const nameParam = params.get('name') || params.get('n');
+    const variantParam = params.get('v');
+    if (nameParam) {
+      const validation = validateName(nameParam);
+      if (validation.isValid) {
+        const vibe = generateVibe(validation.value, { variant: variantParam });
+        if (vibe) {
+          return { name: validation.value, currentVibe: vibe, screen: 'shared' };
         }
       }
     }
-    return { name: '', currentVibe: null, screen: 'home' };
-  });
+  }
+
+  return { name: '', currentVibe: null, screen: 'home' };
+}
+
+function App() {
+  // Parse query parameters on load to check if viewing a shared vibe (lazy init)
+  const [initialState] = useState(getStateFromUrl);
 
   const [name, setName] = useState(initialState.name);
   const [currentVibe, setCurrentVibe] = useState(initialState.currentVibe);
   const [screen, setScreen] = useState(initialState.screen);
   const [scanSignals, setScanSignals] = useState(null);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextState = getStateFromUrl();
+      setName(nextState.name);
+      setCurrentVibe(nextState.currentVibe);
+      setScreen(nextState.screen);
+      setScanSignals(null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Handler for submitting a name
   const handleStartScan = (submittedName, signals = {}) => {
@@ -83,11 +100,11 @@ function App() {
         )}
 
         {screen === 'result' && currentVibe && (
-          <VibeCard vibe={currentVibe} onReset={handleReset} isShared={false} />
+          <VibeCard key={`res_${currentVibe.name}_${currentVibe.shareVariant}`} vibe={currentVibe} onReset={handleReset} isShared={false} />
         )}
 
         {screen === 'shared' && currentVibe && (
-          <VibeCard vibe={currentVibe} onReset={handleReset} isShared={true} />
+          <VibeCard key={`shr_${currentVibe.name}_${currentVibe.shareVariant}`} vibe={currentVibe} onReset={handleReset} isShared={true} />
         )}
       </main>
 

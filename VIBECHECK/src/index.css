@@ -428,22 +428,6 @@ p {
   }
 }
 
-@keyframes shareFloatAway {
-  0% {
-    opacity: 0;
-    transform: translate3d(-50%, 0, 0) scale(0.65) rotate(0deg);
-  }
-
-  18% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate3d(calc(-50% + var(--share-x)), var(--share-y), 0) scale(var(--share-scale)) rotate(var(--share-rot));
-  }
-}
-
 @keyframes shareGlowBloom {
   0% {
     opacity: 0;

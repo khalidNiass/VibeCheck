@@ -790,51 +790,6 @@
   animation: whatsappIconFly 0.58s var(--ease-out) both;
 }
 
-.share-sheet-later {
-  margin-top: 10px;
-  min-height: 34px;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.share-sheet-later:active {
-  transform: scale(0.96);
-}
-
-.share-sheet-success {
-  display: grid;
-  gap: 4px;
-  justify-items: center;
-  padding: 6px 34px 14px;
-  animation: rewardBounce 0.44s var(--ease-bounce) both;
-}
-
-.share-sheet-success-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(160, 53, 252, 0.14), rgba(37, 211, 102, 0.16));
-  font-size: 24px;
-}
-
-.share-sheet-success strong {
-  font-size: 21px;
-  color: var(--text-h);
-}
-
-.share-sheet-success span {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-}
-
 .btn-share-magnet {
   position: relative;
   overflow: visible;
@@ -916,65 +871,6 @@
   font-weight: 600;
   color: var(--text);
   opacity: 0.86;
-}
-
-.share-celebration-layer {
-  position: fixed;
-  left: 50%;
-  bottom: 118px;
-  width: 1px;
-  height: 1px;
-  pointer-events: none;
-  z-index: 30;
-}
-
-.share-float-icon {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(37, 211, 102, 0.95);
-  color: #ffffff;
-  font-size: 16px;
-  box-shadow: 0 10px 24px rgba(37, 211, 102, 0.26);
-  animation: shareFloatAway 0.9s var(--ease-out) both;
-  will-change: transform, opacity;
-}
-
-.share-float-icon:nth-child(1) {
-  --share-x: -86px;
-  --share-y: -120px;
-  --share-scale: 1.08;
-  --share-rot: -10deg;
-}
-
-.share-float-icon:nth-child(2) {
-  --share-x: -34px;
-  --share-y: -148px;
-  --share-scale: 0.94;
-  --share-rot: 12deg;
-  animation-delay: 60ms;
-}
-
-.share-float-icon:nth-child(3) {
-  --share-x: 42px;
-  --share-y: -136px;
-  --share-scale: 1;
-  --share-rot: -18deg;
-  animation-delay: 110ms;
-}
-
-.share-float-icon:nth-child(4) {
-  --share-x: 92px;
-  --share-y: -108px;
-  --share-scale: 0.9;
-  --share-rot: 15deg;
-  animation-delay: 150ms;
 }
 
 /* Toast Notification Alert */
