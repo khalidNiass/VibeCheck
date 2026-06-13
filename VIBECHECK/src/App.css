@@ -1133,3 +1133,156 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* --- Soft Share to Unlock Gating Styles --- */
+.vibe-description-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 4px;
+}
+
+.vibe-description.is-gated {
+  filter: blur(8px);
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.55;
+  transition: filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vibe-description-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  border-radius: 12px;
+  text-align: center;
+  z-index: 5;
+  padding: 12px;
+  animation: unlockFadeIn 0.4s var(--ease-out) both;
+}
+
+@keyframes unlockFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.vibe-description-overlay .lock-icon {
+  font-size: 22px;
+  display: inline-block;
+  animation: lockFloat 3s ease-in-out infinite;
+}
+
+@keyframes lockFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.vibe-description-overlay .lock-text {
+  font-family: var(--heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--card-accent-text, var(--accent));
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  max-width: 240px;
+}
+
+/* Unlocked Confirmation Toast Badge */
+.vibe-description-unlocked-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 14.5px;
+  font-weight: 700;
+  box-shadow: 0 10px 24px -10px rgba(16, 185, 129, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
+  pointer-events: none;
+  animation: unlockedBadgeAnim 3.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes unlockedBadgeAnim {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.85);
+  }
+  12%, 80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(0.9);
+  }
+}
+
+/* Gated WhatsApp button emphasis pulse/glow */
+.btn-share-magnet.pulse-glow {
+  animation: magnetPulseGlow 2.5s infinite;
+  box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5), 0 8px 24px -8px rgba(37, 211, 102, 0.3);
+}
+
+@keyframes magnetPulseGlow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4), 0 8px 24px -8px rgba(37, 211, 102, 0.3);
+  }
+  35% {
+    transform: scale(1.025);
+    box-shadow: 0 0 0 10px rgba(37, 211, 102, 0), 0 12px 28px -6px rgba(37, 211, 102, 0.4);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0), 0 8px 24px -8px rgba(37, 211, 102, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0), 0 8px 24px -8px rgba(37, 211, 102, 0.3);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .vibe-description.is-gated {
+    filter: blur(10px) !important;
+    transition: none !important;
+  }
+  .vibe-description-overlay,
+  .vibe-description-overlay .lock-icon,
+  .vibe-description-unlocked-badge,
+  .btn-share-magnet.pulse-glow {
+    animation: none !important;
+    transition: none !important;
+  }
+  .vibe-description-unlocked-badge {
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    transform: none;
+    opacity: 1;
+    animation: fadeOutAfter 4s forwards !important;
+  }
+}
+@keyframes fadeOutAfter {
+  0%, 75% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}

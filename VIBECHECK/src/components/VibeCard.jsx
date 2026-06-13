@@ -6,27 +6,23 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
   const [toastMessage, setToastMessage] = useState('');
   const [shareCelebrating, setShareCelebrating] = useState(false);
   const [shareRewardVisible, setShareRewardVisible] = useState(false);
-  const [shareSheetVisible, setShareSheetVisible] = useState(false);
-  const [shareSheetDismissed, setShareSheetDismissed] = useState(false);
-  const [shareSheetClosing, setShareSheetClosing] = useState(false);
   const shareTimers = useRef([]);
+
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    if (isShared) return true;
+    try {
+      return sessionStorage.getItem(`vibecheck_unlocked_${vibe.name}_${vibe.shareVariant}`) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [showUnlockBadge, setShowUnlockBadge] = useState(false);
 
   useEffect(() => {
     return () => {
       shareTimers.current.forEach((timer) => clearTimeout(timer));
     };
   }, []);
-
-  useEffect(() => {
-    if (isShared || shareSheetDismissed) return undefined;
-
-    const timer = setTimeout(() => {
-      setShareSheetClosing(false);
-      setShareSheetVisible(true);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [isShared, shareSheetDismissed, vibe.name]);
 
   // Construct sharing URL
   const getShareUrl = () => {
@@ -64,38 +60,29 @@ export default function VibeCard({ vibe, onReset, isShared = false }) {
 
   const getWhatsAppShareUrl = () => {
     const shareUrl = getShareUrl();
-    const text = vibe.shareText || `I just got my VibeCheck 😄
-
-${vibe.emoji} ${vibe.archetypeTitle}
-"${vibe.description}"
-
-What vibe do you get? 👀`;
-
+    const text = vibe.shareText || `I just got my VibeCheck 😄\n\n${vibe.emoji} ${vibe.archetypeTitle}\n"${vibe.description}"\n\nWhat vibe do you get? 👀`;
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + shareUrl)}`;
   };
 
   const handleWhatsAppShare = () => {
     shareTimers.current.forEach((timer) => clearTimeout(timer));
+    
+    // Instantly unlock and celebrate
+    setIsUnlocked(true);
+    setShowUnlockBadge(true);
     setShareCelebrating(true);
     setShareRewardVisible(true);
-    setShareSheetVisible(true);
-    setShareSheetClosing(false);
+
+    try {
+      sessionStorage.setItem(`vibecheck_unlocked_${vibe.name}_${vibe.shareVariant}`, 'true');
+    } catch (e) {
+      console.warn('sessionStorage is not accessible', e);
+    }
 
     shareTimers.current = [
-      setTimeout(() => setShareCelebrating(false), 900),
-      setTimeout(() => setShareRewardVisible(false), 5200)
-    ];
-  };
-
-  const handleDismissShareSheet = () => {
-    setShareSheetDismissed(true);
-    setShareSheetClosing(true);
-    shareTimers.current = [
-      ...shareTimers.current,
-      setTimeout(() => {
-        setShareSheetVisible(false);
-        setShareSheetClosing(false);
-      }, 260)
+      setTimeout(() => setShareCelebrating(false), 2500),
+      setTimeout(() => setShareRewardVisible(false), 5200),
+      setTimeout(() => setShowUnlockBadge(false), 4000)
     ];
   };
 
@@ -103,60 +90,14 @@ What vibe do you get? 👀`;
     <div className="vibe-card-container">
       <EmojiBurst />
       {shareCelebrating && (
+        <EmojiBurst key="unlock-celebration-burst" />
+      )}
+      {shareCelebrating && (
         <div className="share-celebration-layer" aria-hidden="true">
           <span className="share-float-icon">💬</span>
           <span className="share-float-icon">🎉</span>
           <span className="share-float-icon">✨</span>
           <span className="share-float-icon">💚</span>
-        </div>
-      )}
-
-      {!isShared && (shareSheetVisible || shareSheetClosing) && (
-        <div className={`share-sheet-backdrop ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`}>
-          <div className={`share-sheet ${shareCelebrating ? 'is-sharing' : ''} ${shareSheetClosing ? 'is-closing' : ''}`} role="region" aria-label="Share your VibeCheck result">
-            <div className="share-sheet-brand" aria-hidden="true">
-              <img src="/logo.png" alt="" />
-              <span>VibeCheck</span>
-            </div>
-
-            <button
-              type="button"
-              className="share-sheet-close"
-              onClick={handleDismissShareSheet}
-              aria-label="Close share prompt"
-            >
-              ×
-            </button>
-
-            {shareRewardVisible ? (
-              <div className="share-sheet-success" role="status">
-                <span className="share-sheet-success-icon">🎉</span>
-                <strong>Shared!</strong>
-                <span>Let's see what your friends get 👀</span>
-              </div>
-            ) : (
-              <>
-                <div className="share-sheet-kicker">Ta-da 🎉</div>
-                <h3 className="share-sheet-title">This result is share worthy 😄</h3>
-                <p className="share-sheet-copy">Send it to your friends and see what vibe they get.</p>
-              </>
-            )}
-
-            <a
-              href={getWhatsAppShareUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`btn btn-whatsapp share-sheet-button ${shareCelebrating ? 'is-sharing' : ''}`}
-              onClick={handleWhatsAppShare}
-            >
-              <span className="whatsapp-button-icon">💬</span>
-              <span>Share on WhatsApp</span>
-            </a>
-
-            <button type="button" className="share-sheet-later" onClick={handleDismissShareSheet}>
-              Maybe later
-            </button>
-          </div>
         </div>
       )}
 
@@ -195,8 +136,21 @@ What vibe do you get? 👀`;
 
         <MotionReveal className="vibe-divider" delay={300}></MotionReveal>
 
-        <MotionReveal as="p" className="vibe-description" delay={360}>
-          "{vibe.description}"
+        <MotionReveal className="vibe-description-wrapper" delay={360}>
+          <p className={`vibe-description ${(!isUnlocked && !isShared) ? 'is-gated' : ''}`}>
+            "{vibe.description}"
+          </p>
+          {!isUnlocked && !isShared && (
+            <div className="vibe-description-overlay">
+              <span className="lock-icon" aria-hidden="true">✨</span>
+              <span className="lock-text">Share your vibe to unlock the full message ✨</span>
+            </div>
+          )}
+          {isUnlocked && showUnlockBadge && !isShared && (
+            <div className="vibe-description-unlocked-badge">
+              Unlocked 🎉
+            </div>
+          )}
         </MotionReveal>
 
         <MotionReveal className="stats-section" delay={430} inView>
@@ -226,7 +180,7 @@ What vibe do you get? 👀`;
 
       {/* Sharing and Action Buttons */}
       <MotionReveal className="action-area" delay={580} inView>
-        {shareRewardVisible && !shareSheetVisible && (
+        {shareRewardVisible && (
           <MotionReveal className="share-reward-message" variant="bounce" role="status">
             <strong>Shared! 🎉</strong>
             <span>Let's see what your friends get 😄</span>
@@ -263,7 +217,7 @@ What vibe do you get? 👀`;
                 href={getWhatsAppShareUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`btn btn-whatsapp btn-share-magnet ${shareCelebrating ? 'is-sharing' : ''}`}
+                className={`btn btn-whatsapp btn-share-magnet ${(!isUnlocked && !isShared) ? 'pulse-glow' : ''} ${shareCelebrating ? 'is-sharing' : ''}`}
                 onClick={handleWhatsAppShare}
               >
                 <span className="whatsapp-button-icon">💬</span>
